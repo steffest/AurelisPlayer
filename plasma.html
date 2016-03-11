@@ -1,0 +1,62 @@
+
+<html>
+<head>
+    <script type="text/javascript" src="http://lib.ivank.net/ivank.js"></script>
+    <script type="text/javascript">
+
+        var stage, bd, time=0;
+        var a=5, b=1, c=3, d=4, e=5;
+
+        a = 3; b=2; c=5; d=27; e=14;
+        var w=400, h=256;
+
+        // precomputed sine table, -127 .. 127
+        var sin  = new Uint8Array(512);
+        for (var i=0; i<512; i++) sin[i] = (Math.sin(2*Math.PI/512*i) * 127 + 127);
+
+        function Start()
+        {
+            stage = new Stage("c");
+            bd = BitmapData.empty(w, h, 0xff000000);
+
+            var bm = new Bitmap(bd);
+            bm.scaleX = stage.stageWidth/w;
+            bm.scaleY = stage.stageHeight/h;
+            stage.addChild(bm);
+
+            stage.addEventListener(Event.ENTER_FRAME, onEF);
+            stage.addEventListener(MouseEvent.MOUSE_DOWN, onMD);
+        }
+
+        function onEF(ev) { drawPlasma(); time++; }
+
+        function drawPlasma()
+        {
+            var hh = h*0.1 +10*d-4;
+            var hw = w*0.1 +10*e-4;
+            var i3 = 1/5;
+            var fr = time / 6;
+            var am = a-1;
+            var bm = b-1;
+            var es = e<<2;
+            for(var y=0; y<h; y++)	// rows
+                for(var x=0; x<w; x++)	// columns
+                {
+                    var di = Math.floor( Math.sqrt((hh-y)*(hh-y) + (hw-x)*(hw-x)) );
+                    var hi = (sin[(x*b+fr)&511]+sin[(di*a+fr*b)&511]+sin[359-(y*a+x*b+fr)&511])*i3;
+
+
+                    var re = sin[((hi << am)+d)  & 511];
+                    var gr = sin[((hi << bm)+es) & 511];
+                    var bl = sin[ (hi << bm)     & 511];
+
+                    bd.setPixel(x,y,(re<<16 | gr<<8 | bl));
+                }
+        }
+
+        function onMD(ev) { a = rand(4); b = rand(4); c = rand(8); d = rand(180); e = rand(180); }
+        function rand(n)  { return 1+Math.floor(Math.random()*n); }
+    </script>
+</head>
+<body onload="Start();"><canvas id="c"></canvas></body>
+</html>

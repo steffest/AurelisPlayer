@@ -1,0 +1,84 @@
+.aurelisplayer{
+    background-color: grey;
+    width: 600px;
+    height: 400px;
+    margin: auto;
+    position: relative;
+    font-family: sans-serif;
+    max-width: 100%;
+}
+
+.aurelisplayer .hidden{
+    display: none;
+}
+
+.aurelisplayer video{
+    position: absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+}
+
+.aurelisplayer .play{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    background-image: url("../_assets/button_play_big.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 10;
+}
+
+.aurelisplayer .play:hover{
+    cursor: pointer;
+}
+
+.aurelisplayer .status{
+    position: absolute;
+    bottom:0;
+    width: 100%;
+    height: 30px;
+    text-align: center;
+    color: white;
+    background-color: black;
+    z-index: 9;
+}
+
+.aurelisplayer .image{
+    position: absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    background-position: center center;
+    background-size: cover;
+}
+
+.aurelisplayer #img1{
+    z-index: 3;
+    opacity: 1;
+    -webkit-transition: opacity 3s;
+    transition: opacity 3s;
+
+}
+
+.aurelisplayer #img1.transparent{
+    opacity: 0;
+}
+
+.aurelisplayer #img2{
+    z-index: 2;
+}
+
+#log{
+    font-family: sans-serif;
+    font-size: 11px;
+}
