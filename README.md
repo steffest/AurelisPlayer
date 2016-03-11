@@ -63,3 +63,5 @@ Tested on most current Desktop and Mobile browsers
   - iPhone IOS9 and IOS8
   - iPod touch IOS7 and IOS6
   
+
+Live demo at http://box.stef.be/audio/aurelis/player.html
