@@ -1,4 +1,4 @@
-$(document).on("ready",function(){
+document.addEventListener("DOMContentLoaded", function() {
 
 	// settings the videoUrl to undefined will skip the video and play the image slideShow;
 	var videoUrl = '_video/UnderwaterLightRays.mp4';
@@ -7,13 +7,13 @@ $(document).on("ready",function(){
 
 	var audioEngine = "";
 	/*
-	 	desktop browser will use HTML5 audio by default.
-		mobile browsers will use WebAudioAPI by default to allow for multiple concurrent audio playback
-		the drawback of WebAudioAPI is that all audio must be preloaded
+	 desktop browser will use HTML5 audio by default.
+	 mobile browsers will use WebAudioAPI by default to allow for multiple concurrent audio playback
+	 the drawback of WebAudioAPI is that all audio must be preloaded
 
-		set to audioEngine to 'html5' if you want to try to use HTML5 audio instead of WebAudioAPI, even on mobile
-		set to audioEngine to 'webaudio' to always use WebAudioAPI
-	*/
+	 set to audioEngine to 'html5' if you want to try to use HTML5 audio instead of WebAudioAPI, even on mobile
+	 set to audioEngine to 'webaudio' to always use WebAudioAPI
+	 */
 
 	//audioEngine = "html5";
 	//audioEngine = "webaudio";
@@ -41,8 +41,12 @@ $(document).on("ready",function(){
 	});
 });
 
+
 function log(s){
-	$("#log").append(s + "<br>");
+	var container = document.getElementById("log");
+	if (container){
+		container.innerHTML += s + "<br>";
+	}
 	console.log(s);
 }
 
