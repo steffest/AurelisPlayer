@@ -16,7 +16,7 @@ Audio playback is based on Howler : https://github.com/goldfire/howler.js/tree/2
 Desktop browser will default to HTML5 audio
 Mobile browser will default to Web Audio API
 This allows for multiple concurrent audio playback on mobile.
-The drawback is that all audio must be preloaded
+The drawback is that all audio must be preloaded on mobile browsers.
 
 Example
 
@@ -39,3 +39,27 @@ AurelisPlayer.init({
 		audioEngine: "default"
 	});
 ```
+
+
+Tested on most current Desktop and Mobile browsers
+- Windows
+  - Internet Explorer 9, 10 and 11
+  - Edge
+  - Firefox
+  - Chrome
+- OSX
+  - Safari
+  - Chrome
+  - Firefox
+- Linux
+  - Chrome
+  - Firefox
+- Android 4,5 and 6
+  - Chrome
+  - Stock Androuid browser
+  - Firefox
+- IOS
+  - Ipad IOS9
+  - iPhone IOS9 and IOS8
+  - iPod touch IOS7 and IOS6
+  
