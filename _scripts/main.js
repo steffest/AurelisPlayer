@@ -11,6 +11,11 @@ document.addEventListener("DOMContentLoaded", function() {
 	 mobile browsers will use WebAudioAPI by default to allow for multiple concurrent audio playback
 	 the drawback of WebAudioAPI is that all audio must be preloaded
 
+	 Therefore when WebAudioAPI is used, the audio will be loaded and played is segments
+	 The player assumes there's a directory with the same name as the mp3 file with several smaller mp3 files in it, numbered as xxx.mp3,
+	 starting from 001.mp3 onwards.
+	 the maximum number of parts should be stated as the "parts" parameter in the playlist object array.
+
 	 set to audioEngine to 'html5' if you want to try to use HTML5 audio instead of WebAudioAPI, even on mobile
 	 set to audioEngine to 'webaudio' to always use WebAudioAPI
 	 */
@@ -24,10 +29,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	AurelisPlayer.init({
 		container: "aurelisplayer",
-		backGroundAudioUrl: '_samples/birds.mp3',
-		introAudioUrl: '_samples/chicken1.mp3',
-		sessionAudioUrl: '_samples/bond.mp3',
-		outroAudioUrl: '_samples/chicken2.mp3',
+		backGroundPlaylist: [
+			{url: '_samples/Guitar01.mp3', parts: 53}
+		],
+		sessionPlaylist:[
+			{url: '_samples/EN00015.mp3', parts: 60 },
+			{url: '_samples/EN07101.mp3', parts: 107 },
+			{url: '_samples/EN99906.mp3', parts: 25 }
+		],
 		videoUrl: videoUrl,
 		images:[
 			'_video/snap1.png',
@@ -37,15 +46,22 @@ document.addEventListener("DOMContentLoaded", function() {
 			'_video/snap5.png',
 			'_video/snap6.png'
 		],
-		audioEngine: audioEngine
+		audioEngine: audioEngine,
+		logger: false
 	});
 });
 
 
+var logCounter = 0;
 function log(s){
 	var container = document.getElementById("log");
 	if (container){
+		if (logCounter>40) {
+			container.innerHTML = "";
+			logCounter = 0;
+		}
 		container.innerHTML += s + "<br>";
+		logCounter++;
 	}
 	console.log(s);
 }

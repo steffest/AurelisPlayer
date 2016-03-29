@@ -9,25 +9,205 @@ var AurelisPlayer = (function(){
 	var preloadCount = 0;
 	var preloadMax = 0;
 	var slideShowIndex = 0;
+	var bufferCount;
+	var logger;
+
+
+	// --- Aurelis Audio Playlist Model ---
+	var AurelisAudioPlaylist = function(properties){
+		this.index = 0;
+		this.segmentIndex = 1;
+		this.lastIndex = -1;
+		this.lastSegmentIndex = 0;
+		this.howlerIndex = 0;
+		this.howlers = [];
+		this.playList = properties.playList;
+		this.name = properties.name;
+		this.loop = properties.loop;
+		this.isPreloaded = false;
+		this.parent= properties.parent;
+		this.onEnd = properties.onEnd;
+
+		if (settings.preferHTML5 && !this.loop) this.lastIndex = this.playList.length;
+
+		this.loadNextBuffer();
+	};
+
+	AurelisAudioPlaylist.prototype.play = function(){
+		var howler = this.howlers[this.howlerIndex];
+		if (howler) {
+			if (logger) logger("Playing audio " + howler._src);
+			howler.play();
+		}
+	};
+
+	AurelisAudioPlaylist.prototype.pause = function(){
+		var howler = this.howlers[this.howlerIndex];
+		if (howler) {
+			if (logger) logger("Pausing audio " + howler._src);
+			howler.pause();
+		}
+	};
+
+	AurelisAudioPlaylist.prototype.stop = function(){
+		var howler = this.howlers[this.howlerIndex];
+		if (howler) {
+			if (logger) logger("fadeing out audio " + howler._src);
+			howler.fade(1,0,3500);
+			setTimeout(function(){
+				howler.stop();
+				if (logger) logger("audio " + howler._src + " stopped");
+			},4000);
+		}
+	};
+
+	AurelisAudioPlaylist.prototype.loadNextBuffer = function(){
+		var howler,url;
+
+		if (this.howlers.length == 0){
+			// initial preloading
+			for (var i = 0; i<bufferCount;i++){
+				url = this.getNextSegmentUrl();
+				if (url){
+					if (logger) logger("creating audio object - preloading " + this.name + " url " + url);
+					howler = this.createHowler(url);
+					this.howlers.push(howler);
+				}
+			}
+		}else{
+			url = this.getNextSegmentUrl();
+			if (url){
+				var index = this.howlerIndex + bufferCount;
+				if (index >= this.howlers.length) index -= this.howlers.length;
+				howler = this.howlers[index];
+				howler.unload();
+				this.howlers[index] = this.createHowler(url);
+				if (logger) logger("reusing " + this.name + " audio object " + index + " - preloading " + url);
+			}
+
+		}
+	};
+
+	AurelisAudioPlaylist.prototype.playNextSegment = function(){
+		if (this.parent.isPlaying()){
+			this.howlerIndex++;
+			if (this.howlerIndex == this.howlers.length) this.howlerIndex=0;
+			var howler = this.howlers[this.howlerIndex];
+			if (howler) {
+				if (logger) logger("Playing audio " + howler._src);
+				howler.play();
+			}
+		}
+	};
+
+	AurelisAudioPlaylist.prototype.getNextSegmentUrl = function(){
+		// get next audio url;
+		var url;
+
+		if (settings.preferHTML5){
+			// direct url to full mp3
+			if (this.index < this.playList.length) {
+				url = this.playList[this.index].url;
+				this.index++;
+			}else{
+				if (this.loop){
+					this.index = 0;
+					url = this.playList[this.index].url;
+				}else{
+					this.lastIndex = this.index;
+					if (logger) logger("setting lastindex to " + this.lastIndex)  ;
+					return false;
+				}
+			}
+		}else{
+			var audioUrl = this.playList[this.index];
+			if (this.segmentIndex > audioUrl.parts){
+				// this audiofile is done, moving to the next one.
+				this.index++;
+				if (this.index >= this.playList.length){
+					// playlist is Done.
+					if (logger) logger("Playlist for " + this.name + " is done, looping: " + this.loop);
+					if (this.loop){
+						this.index = 0;
+						audioUrl = this.playList[this.index];
+						this.segmentIndex = 1;
+					}else{
+						this.lastSegmentIndex = this.segmentIndex;
+						return false;
+					}
+				}else{
+					audioUrl = this.playList[this.index];
+					this.segmentIndex = 1;
+				}
+			}
+			// get path to folder
+			url = audioUrl.url.substr(0,audioUrl.url.length-4) + "/";
+			var s_index = "" + this.segmentIndex;
+			if (s_index.length<3) s_index = "0" + s_index;
+			if (s_index.length<3) s_index = "0" + s_index;
+
+			url += s_index + ".mp3";
+			this.segmentIndex++;
+		}
+		return url;
+	};
+
+	AurelisAudioPlaylist.prototype.createHowler = function(url){
+		var self = this;
+
+		var howler = new Howl({
+			src: [url],
+			html5: settings.preferHTML5,
+			//autoplay: self.parent.isPlaying() && settings.preferHTML5,
+			//buffer: settings.preferHTML5
+		});
+
+		howler.on("load",function(){
+			if (logger) logger("Audio loaded: " + url);
+			if (!self.isPreloaded){
+				self.isPreloaded = true;
+				onAudioPreload();
+			}
+		});
+
+		howler.on("end",function(){
+			if (self.parent.isPlaying()){
+				if (logger) logger("Audio ended: " + url);
+				var isPlaylistEnded = false;
+				if (settings.preferHTML5){
+					if (self.index == self.lastIndex) isPlaylistEnded = true;
+					if (logger) logger("self.index == self.lastIndex " + self.index + ", " + self.lastIndex);
+				}else{
+					if (self.segmentIndex == self.lastSegmentIndex) isPlaylistEnded = true;
+				}
+
+				if (isPlaylistEnded){
+					if (logger) logger("Playlist " + self.name + " is done");
+					if (self.onEnd) self.onEnd();
+				}else{
+					self.loadNextBuffer();
+					if (!settings.preferHTML5) self.playNextSegment();
+
+				}
+
+			}
+		});
+
+		return howler;
+	};
+
+
+	// --- End Aurelis Audio Playlist Model ---
 
 	var settings,
 		backgroundAudio,
-		introAudio,
 		sessionAudio,
-		outroAudio,
 		playButton,
 		video,
 		status,
 		img1,
 		img2,
-		playState,
 		slideShowTimer;
-
-	var PLAYSTATE = {
-		INTRO: 1,
-		SESSION: 2,
-		OUTRO:3
-	};
 
 	self.init = function(properties){
 
@@ -38,85 +218,38 @@ var AurelisPlayer = (function(){
 		if (settings.audioEngine == "html5") settings.preferHTML5=true;
 		if (settings.audioEngine == "webaudio") settings.preferHTML5=false;
 
+		bufferCount = 2; // amount of segments to preload in advance
+		if (settings.preferHTML5) bufferCount=1;
+
+		logger = settings.logger;
+
 		generate();
 		status.innerHTML = "preloading audio ...";
 
-		if (settings.backGroundAudioUrl){
-			preloadMax ++;
-			backgroundAudio = new Howl({
-				src: [settings.backGroundAudioUrl],
-				html5: settings.preferHTML5
-			});
-
-			backgroundAudio.on("load",function(){
-				log("Background Audio loaded");
-				onAudioPreload();
-			});
+		if (settings.backGroundPlaylist && settings.backGroundPlaylist.length){
+			preloadMax++;
+			backgroundAudio = new AurelisAudioPlaylist({
+				name: "background",
+				playList: settings.backGroundPlaylist,
+				loop: true,
+				parent: self
+			})
 		}
 
-		if (settings.introAudioUrl){
-			preloadMax ++;
-			introAudio = new Howl({
-				src: [settings.introAudioUrl],
-				html5: settings.preferHTML5
-			});
-
-			introAudio.on("load",function(){
-				log("Intro Audio loaded");
-				onAudioPreload();
-			});
-
-			introAudio.on("end",function(){
-				log("intro done, playing session");
-				if (isPlaying) {
-					sessionAudio.play();
-					playState = PLAYSTATE.SESSION;
-				}
-			});
-		}
-
-		if (settings.sessionAudioUrl){
-			preloadMax ++;
-			sessionAudio = new Howl({
-				src: [settings.sessionAudioUrl],
-				html5: settings.preferHTML5
-			});
-
-			sessionAudio.on("load",function(){
-				log("Session Audio loaded");
-				onAudioPreload();
-			});
-
-			sessionAudio.on("end",function(){
-				log("session done, playing outro");
-				if (isPlaying) {
-					outroAudio.play();
-					playState = PLAYSTATE.OUTRO;
-				}
-			});
-		}
-
-		if (settings.outroAudioUrl){
-			// don't add to preload, let's asume it's preloaded before the session is done playing
-			outroAudio = new Howl({
-				src: [settings.outroAudioUrl],
-				html5: settings.preferHTML5
-			});
-
-			outroAudio.on("load",function(){
-				log("Outro Audio loaded");
-			});
-
-			outroAudio.on("end",function(){
-				log("outro done, fading out and stopping audio in 5 seconds");
-				backgroundAudio.fade(1,0,4500);
-				setTimeout(function(){
+		if (settings.sessionPlaylist && settings.sessionPlaylist.length){
+			preloadMax++;
+			sessionAudio = new AurelisAudioPlaylist({
+				name: "session",
+				playList: settings.sessionPlaylist,
+				loop: false,
+				parent: self,
+				onEnd: function(){
 					self.stop();
-				},5000);
-			});
+				}
+			})
 		}
 
-		// skip foreced preloading for html5 audio
+		// skip forced preloading for html5 audio
 		if (settings.preferHTML5) isReady = true;
 
 	};
@@ -126,27 +259,25 @@ var AurelisPlayer = (function(){
 		isPlaying = true;
 		isStarted = true;
 
-		log("Start audio playback");
+		if (logger) logger("Start audio playback");
 		startVisual();
 
 		playButton.classList.add("hidden");
 
-		backgroundAudio.play();
+		if (backgroundAudio) backgroundAudio.play();
 		setTimeout(function(){
-			if (isPlaying){
-				playState = PLAYSTATE.INTRO;
-				introAudio.play();
+			if (isPlaying && sessionAudio){
+				sessionAudio.play();
 			}
 		},1000);
 	};
 
 	self.pause = function(){
-		log("pausing");
-		backgroundAudio.pause();
-		if (playState == PLAYSTATE.INTRO) introAudio.pause();
-		if (playState == PLAYSTATE.SESSION) sessionAudio.pause();
-		if (playState == PLAYSTATE.OUTRO) outroAudio.pause();
+		if (logger) logger("pausing");
+		if (backgroundAudio) backgroundAudio.pause();
+		if (sessionAudio) sessionAudio.pause();
 		if (video) video.pause();
+
 		playButton.classList.remove("hidden");
 		isPlaying = false;
 	};
@@ -158,12 +289,11 @@ var AurelisPlayer = (function(){
 			self.pause();
 		}else{
 			if (isStarted){
-				log("playing");
-				backgroundAudio.play();
-				if (playState == PLAYSTATE.INTRO) introAudio.play();
-				if (playState == PLAYSTATE.SESSION) sessionAudio.play();
-				if (playState == PLAYSTATE.OUTRO) outroAudio.play();
+				if (logger) logger("playing");
+				if (backgroundAudio) backgroundAudio.play();
+				if (sessionAudio) sessionAudio.play();
 				if (video) video.play();
+
 				playButton.classList.add("hidden");
 				isPlaying = true;
 			}else{
@@ -173,9 +303,10 @@ var AurelisPlayer = (function(){
 	};
 
 	self.stop = function(){
+		if (logger) logger("Aurelis Player Stop");
 		isPlaying = false;
 		isStarted = false;
-		backgroundAudio.stop();
+		if (backgroundAudio) backgroundAudio.stop();
 		if (video){
 			video.pause();
 			video.classList.add("hidden");
@@ -186,7 +317,7 @@ var AurelisPlayer = (function(){
 
 	var generate = function(){
 		container.className = "aurelisplayer";
-		var includeVideo = (Client.canEmbedVideo() && settings.videoUrl);
+		var includeVideo = (Client.canEmbedVideo() && settings.videoUrl && !Client.isMobileDevice());
 
 		if (includeVideo){
 			video = document.createElement("video");
@@ -226,12 +357,11 @@ var AurelisPlayer = (function(){
 		status.className = "status";
 		container.appendChild(status);
 
-
 	};
 
 	var onAudioPreload = function(){
 		preloadCount++;
-		if (preloadCount >= preloadMax){
+		if (preloadCount == preloadMax){
 			isReady = true;
 			playButton.classList.remove("hidden");
 			status.innerHTML = "";
@@ -240,20 +370,20 @@ var AurelisPlayer = (function(){
 
 	var startVisual = function(){
 		if (video && settings.videoUrl){
-			log("start video playback");
+			if (logger) logger("Start video playback");
 			video.src = settings.videoUrl;
 			video.play();
 			video.classList.remove("hidden");
 		}else{
 			// start Slideshow
 			clearTimeout(slideShowTimer);
-			log("start slideshow");
+			if (logger) logger("start slideshow");
 			nextSlide();
 		}
 	};
 
 	var stopVisual = function(){
-		log("stop video playback");
+		if (logger) logger("stop video playback");
 		var video = document.getElementById("video");
 		if (video){
 			video.pause();
