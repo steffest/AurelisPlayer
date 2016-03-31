@@ -147,6 +147,10 @@ var AurelisPlayer = (function(){
 			if (s_index.length<3) s_index = "0" + s_index;
 
 			url += s_index + ".mp3";
+
+			url = url.replace('mp3files/hi_speed', 'chunks');
+			url = url.replace('musicfiles', 'music_chunks');
+
 			this.segmentIndex++;
 		}
 		return url;
@@ -158,8 +162,8 @@ var AurelisPlayer = (function(){
 		var howler = new Howl({
 			src: [url],
 			html5: settings.preferHTML5,
-			//autoplay: self.parent.isPlaying() && settings.preferHTML5,
-			//buffer: settings.preferHTML5
+			autoplay: self.parent.isPlaying() && settings.preferHTML5,
+			buffer: settings.preferHTML5
 		});
 
 		howler.on("load",function(){

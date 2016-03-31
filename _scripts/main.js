@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			'_video/snap6.png'
 		],
 		audioEngine: audioEngine,
-		logger: false
+		logger: log // set to false to disable logging
 	});
 });
 
