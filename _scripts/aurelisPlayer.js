@@ -508,6 +508,7 @@ var AurelisPlayer = (function(){
 				if (img2) img2.classList.add('hidden');
 			},false);
 			video.onclick = self.play;
+			video.loop = true;
 			container.appendChild(video);
 		}
 
