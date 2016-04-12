@@ -1,3 +1,6 @@
+body{
+    margin: 0;
+}
 .aurelisplayer{
     background-color: grey;
     width: 600px;
@@ -7,6 +10,16 @@
     font-family: sans-serif;
     max-width: 100%;
 }
+
+.aurelisplayer.fullscreen{
+    width: 100%;
+    height: 100%;
+}
+
+.aurelisplayer.full{
+    position: absolute;
+}
+
 
 .aurelisplayer .hidden{
     display: none;
@@ -76,6 +89,156 @@
 
 .aurelisplayer #img2{
     z-index: 2;
+}
+
+
+.aurelisplayer .controls{
+    position: absolute;
+    bottom:0;
+    width: 100%;
+    height: 30px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 10;
+}
+
+.aurelisplayer .controls.hidden{
+    display: none;
+}
+
+.aurelisplayer .controls .volume{
+    position: absolute;
+    width: 30px;
+    height: 24px;
+    background-image: url("../_assets/controls/volume.png");
+    background-size: 70% 70%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    left: 5px;
+    bottom: 3px;
+}
+
+.aurelisplayer .controls .fullscreenbutton{
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background-image: url("../_assets/controls/fullscreen.png");
+    background-size: 70% 70%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    right: 5px;
+    bottom: 3px;
+}
+
+.aurelisplayer .controls .volume:hover,
+.aurelisplayer .controls .fullscreenbutton:hover{
+    background-size: 80% 80%;
+    cursor: pointer;
+}
+
+.aurelisplayer .controls .progress{
+    position: absolute;
+    height: 24px;
+    bottom: 3px;
+    right: 35px;
+    left: 40px;
+}
+
+.aurelisplayer .controls .progress .time{
+    position: absolute;
+    width: 65px;
+    height: 24px;
+    text-align: right;
+    color: white;
+    padding-top: 4px;
+    font-size: 13px;
+}
+
+.aurelisplayer .controls .progress .time.right{
+    right: 0;
+    text-align: left;
+}
+
+.aurelisplayer .bar{
+    position: absolute;
+    left: 70px;
+    right: 70px;
+    height: 1px;
+    background-color: grey;
+    border-bottom: 1px solid white;
+    top: 10px;
+}
+
+.aurelisplayer .volumeControls .bar{
+    left: 110px;
+    right: 105px;
+}
+
+.aurelisplayer .dot{
+    position: absolute;
+    left: 0;
+    height: 12px;
+    width: 12px;  /* note: please keep the variabele dotWidth in aurelisPlayer.js in sync */
+    border-radius: 6px;
+    background-color: white;
+    top: -5px;
+    box-shadow: 1px 1px 2px black;
+}
+
+.aurelisplayer .dot:hover,
+.aurelisplayer .dot.dragging{
+    height: 16px;
+    width: 16px;
+    border-radius: 8px;
+    top: -7px;
+    margin-left: -2px;
+    cursor: pointer;
+}
+
+.aurelisplayer .dot.dragging{
+    border: 2px solid white;
+    background-color: black;
+    border-radius: 10px;
+    top: -9px;
+    margin-left: -4px;
+}
+
+.aurelisplayer .volumeControls{
+    position: absolute;
+    bottom:30px;
+    width: 100%;
+    height: 70px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.aurelisplayer .volumeControls.hidden{
+    display: none;
+}
+
+.aurelisplayer .volumeControls .label{
+    position: absolute;
+}
+
+.aurelisplayer .volumeControls #volumesession,
+.aurelisplayer .volumeControls #volumebackground{
+    position: absolute;
+    width: 100%;
+    height: 30px;
+    top:10px;
+}
+
+.aurelisplayer .volumeControls #volumebackground{
+    top: 40px;
+}
+
+.aurelisplayer .volumeControls .label{
+    font-size: 12px;
+    position: absolute;
+    top: 6px;
+    width: 105px;
+    text-align: right;
 }
 
 #log{

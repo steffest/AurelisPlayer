@@ -37,6 +37,8 @@ document.addEventListener("DOMContentLoaded", function() {
 			{url: '_samples/EN07101.mp3', parts: 107 },
 			{url: '_samples/EN99906.mp3', parts: 25 }
 		],
+		silenceBeforeSession: 10, // in seconds
+		backgroundMusicAfterSession: false,
 		videoUrl: videoUrl,
 		images:[
 			'_video/snap1.png',
@@ -47,6 +49,10 @@ document.addEventListener("DOMContentLoaded", function() {
 			'_video/snap6.png'
 		],
 		audioEngine: audioEngine,
+		sessionVolume: 0.8, // 0 to 1
+		sessionVolumeLabel: "Session",
+		backgroundVolume: 0.8, // 0 to 1
+		backgroundVolumeLabel: "Background",
 		logger: log // set to false to disable logging
 	});
 });
