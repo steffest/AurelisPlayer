@@ -95,13 +95,10 @@ var AurelisPlayer = (function(){
 		initialPlay = andPlay;
 
 		var realPosition = position - this.initialSilence;
-		logger("real position: " + realPosition);
 
 		// in which audio part are we?
 		var index = this.getIndexforPosition(realPosition);
 		var segmentDelta = realPosition % partLength;
-
-		logger("index: " + this.index + " - " +  index.playlist);
 
 		if (settings.preferHTML5){
 			if (this.index == index.playlist){
