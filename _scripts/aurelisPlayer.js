@@ -288,7 +288,7 @@ var AurelisPlayer = (function(){
 			src: [url],
 			html5: settings.preferHTML5,
 			autoplay: self.parent.isPlaying() && settings.preferHTML5,
-			//buffer: !settings.preferHTML5,
+			buffer: settings.preferHTML5,
 			volume: volume[self.name] || 0.5
 		});
 
